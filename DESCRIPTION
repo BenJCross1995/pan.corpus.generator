@@ -1,12 +1,14 @@
 Package: pan.corpus.generator
-Title: What the Package Does (One Line, Title Case)
+Title: Pulls PAN-AV Data into R and Creates Corpus Object
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Ben", "Cross", , "ben.cross@postgrad.manchester.ac.uk", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5430-1659"))
+Description: This package is used to pull the various styles of PAN-AV corpus into R and to create a combined corpus object if required. The PAN-AV datasets are used as benchmarking datasets in the field of Authorship Verification.
+License: use_mit_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports: 
+    dplyr,
+    jsonlite
