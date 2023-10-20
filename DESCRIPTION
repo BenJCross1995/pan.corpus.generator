@@ -5,7 +5,7 @@ Authors@R:
     person("Ben", "Cross", , "ben.cross@postgrad.manchester.ac.uk", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5430-1659"))
 Description: This package is used to pull the various styles of PAN-AV corpus into R and to create a combined corpus object if required. The PAN-AV datasets are used as benchmarking datasets in the field of Authorship Verification.
-License: use_mit_license()
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
