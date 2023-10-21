@@ -1,31 +1,38 @@
-#' Check File Exists
-#'
-#' @param file_loc The supposed location of the PAN files
-#'
-#' @export
+#############################################################
+################ FUNCTIONS TO GET FILE PATHS ################
+#############################################################
+
 check_pan_exists <- function(file_loc){
   if(!file.exists(file_loc)){
     stop("Please enter a valid PAN-AV dataset location.")
   }
 }
 
-load_pan <- function(file_loc){
+#' Return file paths of all files in location
+#'
+#' @param file_loc PAN-AV data location
+#'
+#' @return A vector
+#' @export
+get_file_locs <- function(file_loc){
 
   # Check the location is valid
   check_pan_exists(file_loc)
 
-  # Initialise the files
+  # Initialise the files and temporary location
   unchecked_files <- c(file_loc)
   checked_files <- c()
+  tempdir <- tempdir()
 
+  # Loop to check all file paths iteratively
   while(length(unchecked_files) > 0){
     file_to_check <- unchecked_files[1]
-    print(file_to_check)
+
     # Check file information
     temp_file <- file.info(file_to_check)
 
     # If the file is a directory save here
-    folder <- temp_file |> dplyr::filter(isdir == TRUE)
+    folder <- temp_file |> dplyr::filter(temp_file$isdir == TRUE)
 
     # First deal with the case that the file is a directory
     if(nrow(folder) > 0){
@@ -38,8 +45,8 @@ load_pan <- function(file_loc){
       # Next we check for .zip files as they don't show as directories
     } else if(tools::file_ext(file_to_check) == 'zip'){
       # Unzip any files to a temporary location and store the locations as unchecked
-      tempdir <- tempdir()
-      files <- unzip(file_to_check, exdir = tempdir)
+
+      files <- utils::unzip(file_to_check, exdir = tempdir)
       unchecked_files <- append(unchecked_files, files)
 
       # Finally add any other files to the checked list, assuming all of these files
@@ -54,4 +61,20 @@ load_pan <- function(file_loc){
 
   # Store the vector containing the filepath of all checked files.
   return(checked_files)
+}
+
+#' Get paths and info about PAN-AV docs
+#'
+#' @param file_loc Location of the PAN-AV files.
+#'
+#' @return A dataframe
+#' @export
+get_file_details <- function(file_loc){
+
+  file_info <- data.frame('file' = get_file_locs(file_loc))
+
+  file_info <- file_info |>
+    dplyr::mutate(competition = stringr::str_extract(file_info$file, "pan[^-]+"))
+
+  return(file_info)
 }
