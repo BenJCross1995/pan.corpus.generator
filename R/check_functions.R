@@ -74,7 +74,9 @@ get_file_details <- function(file_loc){
   file_info <- data.frame('file' = get_file_locs(file_loc))
 
   file_info <- file_info |>
-    dplyr::mutate(competition = stringr::str_extract(file_info$file, "pan[^-]+"))
+    dplyr::mutate(file_type = tools::file_ext(file),
+                  competition = stringr::str_extract(file_info$file, "pan[^-]+"),
+                  known = ifelse(stringr::str_detect(file, "/known"), TRUE, FALSE))
 
   return(file_info)
 }
