@@ -2,4 +2,4 @@
 
 export(get_file_details)
 export(get_file_locs)
-export(read_jsonl)
+export(read_files)
