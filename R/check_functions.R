@@ -76,8 +76,15 @@ get_file_details <- function(file_loc){
   file_info <- file_info |>
     dplyr::mutate(file_type = tools::file_ext(file),
                   competition = stringr::str_extract(file_info$file, "pan[^-]+"),
+                  category = dplyr::case_when(
+                    stringr::str_count(file, "test") > stringr::str_count(file, "train") ~ "test",
+                    stringr::str_count(file, "train") > stringr::str_count(file, "test") ~ "train",
+                    TRUE ~ as.character(NA)
+                  ),
                   truth = ifelse(stringr::str_detect(file, "truth"), TRUE, FALSE),
-                  known = ifelse(stringr::str_detect(file, "/known"), TRUE, FALSE))
+                  known = ifelse(stringr::str_detect(file, "/known"), TRUE, FALSE),
+                  contents = ifelse(stringr::str_detect(file, "contents"), TRUE, FALSE)) |>
+    dplyr::arrange(dplyr::desc(file_info$competition))
 
   return(file_info)
 }
