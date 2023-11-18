@@ -42,11 +42,61 @@ read_txt <- function(file_loc){
 #'
 #' @return A dataframe.
 #' @export
-read_files <- function(file_loc){
+read_files <- function(file_loc, read_large = FALSE){
 
   if(tools::file_ext(file_loc) %in% c('json', 'jsonl')){
     read_jsonl(file_loc)
     } else {
       read_txt(file_loc)
     }
+}
+
+#' Title
+#'
+#' @param file_loc The location of the files
+#' @param read_large A Binary argument TRUE/FALSE whether the large documents are read
+#'
+#' @return A dataframe
+#' @export
+create_corpus <- function(file_loc, read_large = FALSE){
+
+  file_details <- get_file_details(file_loc)
+
+  if(read_large == FALSE){
+    file_details <- file_details |>
+      dplyr::filter(file_details$large == FALSE)
+  }
+
+  competitions <- unique(file_details$competition)
+
+  # Check for "pan21" and load.
+  if(sum(stringr::str_detect(competitions, "pan21")) == 1){
+
+    # Filter the file details for pan21
+    pan21 <- file_details |>
+      dplyr::filter(file_details$competition == 'pan21')
+
+    # Apply the read_files function on the file column
+    pan21$text <- sapply(pan21$file, read_files)
+
+    # Arrange by the truth column and convert to tibble so that column
+    # stays as a named list
+    pan21 <- pan21 |>
+      dplyr::arrange(pan21$truth) |>
+      dplyr::as_tibble()
+
+    # Select and Pull were not working without this step, the named list column
+    # was ruining this
+    pan21 <- pan21[,ncol(pan21)] |>
+      dplyr::pull() |>
+      unname()
+
+    # Join the truth with the text, might add other formatting to this
+    pan21 <- pan21[[1]] %>%
+      left_join(pan21[[2]],
+                by = 'id')
+  }
+
+
+  return(pan21)
 }

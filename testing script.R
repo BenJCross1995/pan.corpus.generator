@@ -1,24 +1,40 @@
 library(devtools)
 load_all()
-check()
+##check()
 library(dplyr)
 
-test <- get_file_details("/Users/user/Documents/PAN AV Competition Corpus")
 
-test
+test <- create_corpus("/Users/user/Documents/PAN AV Competition Corpus")
 
-test_read <- test %>%
-  filter(competition == "pan21")
+unique(test$competition)
 
-test_read$text <- sapply(test_read$file, read_files)
-test_read
+test |> dplyr::as_tibble() |> dplyr::pull(text) |> unname()
+test |> dplyr::as_tibble() |> dplyr::select(text) |> pull()
 
-unique(test$file_type)
+#### GETTING THE DATA FOR 2021 ####
+test_21_loc <- "/Users/user/Documents/PAN AV Competition Corpus/2021/pan21-authorship-verification-test"
 
-test_sample$text <- sapply(test_sample$file, read_txt)
+test_21 <- create_corpus(test_21_loc)
+
+test_21 <- test_21 %>%
+  arrange(truth) %>%
+  pull(text) %>%
+  unname()
 
 
-test_corpus <- quanteda::corpus(test_sample,
-                                text_field = "text")
+test_21 <- test_21[[1]] %>%
+  left_join(test_21[[2]],
+            by = 'id')
 
-summary(test_corpus, 5)
+test_21
+
+#### GETTING THE DATA FOR 2020 ####
+test %>%
+  filter(competition == 'pan20') %>%
+  arrange(truth)
+
+test_20 <- create_corpus("/Users/user/Documents/PAN AV Competition Corpus/2020")
+stringr::str
+stringr::str
+library(stringr)
+str_detect(unique(test$competition), "pan21")
