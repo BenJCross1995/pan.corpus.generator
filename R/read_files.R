@@ -97,6 +97,44 @@ create_corpus <- function(file_loc, read_large = FALSE){
                 by = 'id')
   }
 
+  # Check for "pan20" and load.
+  if(sum(stringr::str_detect(competitions, "pan20")) == 1){
+
+    # Filter the file details for pan21
+    pan20 <- file_details |>
+      dplyr::filter(file_details$competition == 'pan20')
+
+    # Apply the read_files function on the file column
+    pan20$text <- sapply(pan20$file, read_files)
+
+    # Arrange by the truth column and convert to tibble so that column
+    # stays as a named list
+    pan20 <- pan20 |>
+      dplyr::arrange(pan20$large, pan20$category, pan20$truth) |>
+      dplyr::as_tibble()
+
+    # Select and Pull were not working without this step, the named list column
+    # was ruining this
+    pan20 <- pan20[,ncol(pan20)] |>
+      dplyr::pull() |>
+      unname()
+
+    if(length(pan20) == 6){
+
+      pan20_large <- pan20[[5]] %>%
+        dplyr::left_join(pan20[[6]],
+                         by = 'id')
+
+    }
+
+    pan20_test <- pan20[[1]] |>
+      dplyr::left_join(pan20[[2]],
+                       by = 'id')
+
+    pan20_train <- pan20[[3]] |>
+      dplyr::left_join(pan20[[4]],
+                       by = 'id')
+  }
 
   return(pan21)
 }

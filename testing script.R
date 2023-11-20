@@ -6,35 +6,38 @@ library(dplyr)
 
 test <- create_corpus("/Users/user/Documents/PAN AV Competition Corpus")
 
-unique(test$competition)
-
-test |> dplyr::as_tibble() |> dplyr::pull(text) |> unname()
-test |> dplyr::as_tibble() |> dplyr::select(text) |> pull()
-
-#### GETTING THE DATA FOR 2021 ####
-test_21_loc <- "/Users/user/Documents/PAN AV Competition Corpus/2021/pan21-authorship-verification-test"
-
-test_21 <- create_corpus(test_21_loc)
-
-test_21 <- test_21 %>%
-  arrange(truth) %>%
-  pull(text) %>%
-  unname()
-
-
-test_21 <- test_21[[1]] %>%
-  left_join(test_21[[2]],
-            by = 'id')
-
-test_21
+test
 
 #### GETTING THE DATA FOR 2020 ####
-test %>%
-  filter(competition == 'pan20') %>%
-  arrange(truth)
 
-test_20 <- create_corpus("/Users/user/Documents/PAN AV Competition Corpus/2020")
-stringr::str
-stringr::str
-library(stringr)
-str_detect(unique(test$competition), "pan21")
+test_20 <- get_file_details("/Users/user/Documents/PAN AV Competition Corpus")
+
+test_20 <- test_20 |>
+  dplyr::filter(test_20$competition == 'pan20', large == FALSE) |>
+  dplyr::arrange(large, category, truth)
+
+test_20$text <- sapply(test_20$file, read_files)
+
+test_20 <- test_20 |> dplyr::as_tibble() |>
+  dplyr::select(ncol(test_20)) |>
+  dplyr::pull() |>
+  unname()
+
+if(length(test_20) == 6){
+  pan20_large <- test_20[[5]] %>%
+    left_join(test_20[[6]],
+              by = 'id')
+}
+
+pan20_test <- test_20[[1]] |>
+  dplyr::left_join(test_20[[2]],
+                   by = 'id')
+
+pan20_train <- test_20[[3]] |>
+  dplyr::left_join(test_20[[4]],
+                   by = 'id')
+
+
+pan20_train |> dplyr::as_tibble()
+
+pan20_test |> dplyr::as_tibble()
