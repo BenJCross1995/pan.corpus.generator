@@ -4,58 +4,42 @@
 
 This package will be used to import the data from the PAN-AV datasets into R and to turn them into corpus objects suitable for author verification tasks.
 
+This currently works for the 2020, 2021 datasets but not for the earlier 2013-15 datasets as they have a different file schema. However the 2020 (small) and 2021 files give over 150,000 documents for your corpus.
+
 ## Installation
 
 To install the latest development version directly from the GitHub repository, you can use:
 
-```R
+``` r
 devtools::install_github("https://github.com/BenJCross1995/pan.corpus.generator")
 ```
 
 ## Acquiring Datasets
 
-A pre-requisite of this package is the aquisition of the PAN-AV datasets from the PAN website [here](https://pan.webis.de/clef22/pan22-web/index.html).
+A pre-requisite of this package is the acquisition of the PAN-AV datasets from the PAN website [here](https://pan.webis.de/clef22/pan22-web/index.html). The folder names of the datasets must be in the original format as they were when downloaded. The optimal way to use the package is to have all folders you wish to load as a corpus within the same folder.
 
-## Directory Structure
+## Functions
 
-The main issue with combining these datasets will be concerning the very different file structures year on year, for example;
+There are two functions which are exported in this package.
 
-### 2015
+### get_file_details 
 
-```bash
-├── pan15-authorship-verification-test-and-training.zip
-│   ├── pan15-authorship-verification-test-dataset2-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-test-dataset2-english-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-test-dataset2-dutch-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-test-dataset2-greek-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-test-dataset2-spanish-2015-04-19.zip
-│   │   │   ├── contents.json
-│   │   │   ├── truth.txt
-│   │   │   ├── SP100
-│   │   │   │   ├── unknown.txt
-│   │   │   │   ├── known01.txt
-│   │   │   │   ├── known02.txt
-│   │   │   │   ├── known03.txt
-│   │   │   │   ├── known04.txt
-│   ├── pan15-authorship-verification-training-dataset-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-training-dataset2-english-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-training-dataset2-dutch-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-training-dataset2-greek-2015-04-19.zip
-│   │   ├── pan15-authorship-verification-training-dataset2-spanish-2015-04-19.zip
-│   │   │   ├── contents.json
-│   │   │   ├── truth.txt
-│   │   │   ├── SP100
-│   │   │   │   ├── unknown.txt
-│   │   │   │   ├── known01.txt
-│   │   │   │   ├── known02.txt
-│   │   │   │   ├── known03.txt
-│   │   │   │   ├── known04.txt
-```
+This function returns a dataframe containing file information of all files contained in the folder. This is done by iteratively opening all folders and unzipping folders if required and gathering the file locations of every file within the file location.
 
-### 2020
+The function uses text patterns to then gather file info. This is the reason why you must keep the folder names the same when downloaded.
 
-```bash
-├── pan20-authorship-verification-training-small.zip
-│   ├── pan20-authorship-verification-training-small.jsonl
-│   └── pan20-authorship-verification-training-small-truth.jsonl
-```
+### create_corpus 
+
+This function takes the folder location and create a corpus from all files located within this location. The user has the option to include large files i.e. the 12GB, 2020 large file. The user also has the ability to decide whether they would like the dataset returned as a dataframe or a Quanteda corpus object.
+
+## Planned Next Steps
+
+The next steps planned for the package are as follows:
+
+-   Include the 2013-15 dataset preparation.
+
+-   Convert the code within the create_corpus function into some smaller functions.
+
+-   Utilize parallel processing with the apply family of functions.
+
+-   Look into the **arrow** package for dealing with the large dataset approx 12GB.

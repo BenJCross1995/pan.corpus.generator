@@ -2,18 +2,20 @@
 % Please edit documentation in R/read_files.R
 \name{create_corpus}
 \alias{create_corpus}
-\title{Title}
+\title{Create a corpus object from a folder containing PAN competition data.}
 \usage{
-create_corpus(file_loc, read_large = FALSE)
+create_corpus(file_loc, read_large = FALSE, convert_to_corpus = FALSE)
 }
 \arguments{
 \item{file_loc}{The location of the files}
 
 \item{read_large}{A Binary argument TRUE/FALSE whether the large documents are read}
+
+\item{convert_to_corpus}{A Binary argument TRUE/FALSE to detemine whether to convert to Quanteda corpus object.}
 }
 \value{
-A dataframe
+A dataframe or corpus object depending on the user's selection.
 }
 \description{
-Title
+Create a corpus object from a folder containing PAN competition data.
 }

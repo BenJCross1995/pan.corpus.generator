@@ -2,18 +2,20 @@
 ################ FUNCTIONS TO GET FILE PATHS ################
 #############################################################
 
+#' A function to check if the location exists.
+#'
+#' @param file_loc The file location.
 check_pan_exists <- function(file_loc){
   if(!file.exists(file_loc)){
     stop("Please enter a valid PAN-AV dataset location.")
   }
 }
 
-#' Return file paths of all files in location
+#' Return file paths of all files in location.
 #'
 #' @param file_loc PAN-AV data location
 #'
 #' @return A vector
-#' @export
 get_file_locs <- function(file_loc){
 
   # Check the location is valid
@@ -71,8 +73,10 @@ get_file_locs <- function(file_loc){
 #' @export
 get_file_details <- function(file_loc){
 
+  # Return the file information based on location
   file_info <- data.frame('file' = get_file_locs(file_loc))
 
+  # Code block to get the relavent information from the filestrings
   file_info <- file_info |>
     dplyr::mutate(file_type = tools::file_ext(file),
                   competition = stringr::str_extract(file_info$file, "pan[^-]+"),

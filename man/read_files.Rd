@@ -4,7 +4,7 @@
 \alias{read_files}
 \title{Read the files required for the corpus}
 \usage{
-read_files(file_loc, read_large = FALSE)
+read_files(file_loc)
 }
 \arguments{
 \item{file_loc}{The filepath of the file to read}

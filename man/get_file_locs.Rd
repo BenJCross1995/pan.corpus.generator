@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_functions.R
 \name{get_file_locs}
 \alias{get_file_locs}
-\title{Return file paths of all files in location}
+\title{Return file paths of all files in location.}
 \usage{
 get_file_locs(file_loc)
 }
@@ -13,5 +13,5 @@ get_file_locs(file_loc)
 A vector
 }
 \description{
-Return file paths of all files in location
+Return file paths of all files in location.
 }

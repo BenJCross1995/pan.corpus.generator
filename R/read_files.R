@@ -41,8 +41,7 @@ read_txt <- function(file_loc){
 #' @param file_loc The filepath of the file to read
 #'
 #' @return A dataframe.
-#' @export
-read_files <- function(file_loc, read_large = FALSE){
+read_files <- function(file_loc){
 
   if(tools::file_ext(file_loc) %in% c('json', 'jsonl')){
     read_jsonl(file_loc)
@@ -51,23 +50,29 @@ read_files <- function(file_loc, read_large = FALSE){
     }
 }
 
-#' Title
+#' Create a corpus object from a folder containing PAN competition data.
 #'
 #' @param file_loc The location of the files
 #' @param read_large A Binary argument TRUE/FALSE whether the large documents are read
+#' @param convert_to_corpus A Binary argument TRUE/FALSE to detemine whether to convert to Quanteda corpus object.
 #'
-#' @return A dataframe
+#' @return A dataframe or corpus object depending on the user's selection.
 #' @export
-create_corpus <- function(file_loc, read_large = FALSE){
+create_corpus <- function(file_loc, read_large = FALSE,
+                          convert_to_corpus = FALSE){
 
   file_details <- get_file_details(file_loc)
 
+  # Does the user want the large file from 2020? 12GB of data.
   if(read_large == FALSE){
     file_details <- file_details |>
       dplyr::filter(file_details$large == FALSE)
   }
 
+  # Get the different competitions in the fobject
   competitions <- unique(file_details$competition)
+
+  results <- list()
 
   # Check for "pan21" and load.
   if(sum(stringr::str_detect(competitions, "pan21")) == 1){
@@ -92,9 +97,11 @@ create_corpus <- function(file_loc, read_large = FALSE){
       unname()
 
     # Join the truth with the text, might add other formatting to this
-    pan21 <- pan21[[1]] %>%
-      left_join(pan21[[2]],
-                by = 'id')
+    pan21 <- pan21[[1]] |>
+      dplyr::left_join(pan21[[2]],
+                       by = 'id')
+
+    results <- c(results, pan21 = list(pan21))
   }
 
   # Check for "pan20" and load.
@@ -119,14 +126,19 @@ create_corpus <- function(file_loc, read_large = FALSE){
       dplyr::pull() |>
       unname()
 
+    # Now we need to join together - the first is if the large dataset is included
     if(length(pan20) == 6){
 
-      pan20_large <- pan20[[5]] %>%
+      pan20_large <- pan20[[5]] |>
         dplyr::left_join(pan20[[6]],
                          by = 'id')
 
+      # Append the data to the list
+      results <- c(results, pan20_large = list(pan20_large))
+
     }
 
+    # Complete the joins for the test and training data
     pan20_test <- pan20[[1]] |>
       dplyr::left_join(pan20[[2]],
                        by = 'id')
@@ -134,7 +146,25 @@ create_corpus <- function(file_loc, read_large = FALSE){
     pan20_train <- pan20[[3]] |>
       dplyr::left_join(pan20[[4]],
                        by = 'id')
+
+    # Append these results to the list as named entities
+    results <- c(results, list(pan20_test = pan20_test,
+                               pan20_train = pan20_train))
   }
 
-  return(pan21)
+  # Bind the results together from the list
+  results <- data.table::rbindlist(results)
+
+  # Here we convert the results into a table consisting of author, fandom, and text. Returning only distinct results.
+  results <- as.data.frame(rbind(cbind(author = results$authors1, fandom = results$fandoms1, text = results$pair1),
+                                 cbind(author = results$authors2, fandom = results$fandoms2, text = results$pair2))) |>
+    dplyr::distinct()
+
+  # Convert to quanteda corpus if required by the user.
+  if(convert_to_corpus == TRUE){
+    results = quanteda::corpus(results, text_field = "text")
+  }
+
+  #  Return the list
+  return(results)
 }

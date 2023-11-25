@@ -2,5 +2,3 @@
 
 export(create_corpus)
 export(get_file_details)
-export(get_file_locs)
-export(read_files)
