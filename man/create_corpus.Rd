@@ -4,10 +4,17 @@
 \alias{create_corpus}
 \title{Create a corpus object from a folder containing PAN competition data.}
 \usage{
-create_corpus(file_loc, read_large = FALSE, convert_to_corpus = FALSE)
+create_corpus(
+  file_loc,
+  selected_comp = NULL,
+  read_large = FALSE,
+  convert_to_corpus = FALSE
+)
 }
 \arguments{
 \item{file_loc}{The location of the files}
+
+\item{selected_comp}{A vector containing competitions to select e.g. c('pan21')}
 
 \item{read_large}{A Binary argument TRUE/FALSE whether the large documents are read}
 

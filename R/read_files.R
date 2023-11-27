@@ -53,6 +53,7 @@ read_files <- function(file_loc){
 #' Create a corpus object from a folder containing PAN competition data.
 #'
 #' @param file_loc The location of the files
+#' @param selected_comp A vector containing competitions to select e.g. c('pan21')
 #' @param read_large A Binary argument TRUE/FALSE whether the large documents are read
 #' @param convert_to_corpus A Binary argument TRUE/FALSE to detemine whether to convert to Quanteda corpus object.
 #'
