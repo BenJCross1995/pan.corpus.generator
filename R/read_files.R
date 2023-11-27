@@ -58,19 +58,28 @@ read_files <- function(file_loc){
 #'
 #' @return A dataframe or corpus object depending on the user's selection.
 #' @export
-create_corpus <- function(file_loc, read_large = FALSE,
-                          convert_to_corpus = FALSE){
+create_corpus <- function(file_loc, selected_comp = NULL,
+                          read_large = FALSE, convert_to_corpus = FALSE){
 
+  # Use function to get the details of files in the folder
   file_details <- get_file_details(file_loc)
+
+  # Get the different competitions in the fobject
+  competitions <- unique(file_details$competition)
+
+  # Check to see if user has decided to filter for specific comps
+  if(length(selected_comp) > 0 & selected_comp %in% competitions){
+    file_details <- file_details |>
+      dplyr::filter(file_details$competition %in% selected_comp)
+
+    competitions <- selected_comp
+  }
 
   # Does the user want the large file from 2020? 12GB of data.
   if(read_large == FALSE){
     file_details <- file_details |>
       dplyr::filter(file_details$large == FALSE)
   }
-
-  # Get the different competitions in the fobject
-  competitions <- unique(file_details$competition)
 
   results <- list()
 
