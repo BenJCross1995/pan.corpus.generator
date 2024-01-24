@@ -56,11 +56,13 @@ read_files <- function(file_loc){
 #' @param selected_comp A vector containing competitions to select e.g. c('pan21')
 #' @param read_large A Binary argument TRUE/FALSE whether the large documents are read
 #' @param convert_to_corpus A Binary argument TRUE/FALSE to detemine whether to convert to Quanteda corpus object.
+#' @param x_and_y Split the corpus into x and y as opposed to a single corpus.
 #'
 #' @return A dataframe or corpus object depending on the user's selection.
 #' @export
-create_corpus <- function(file_loc, selected_comp = NULL,
-                          read_large = FALSE, convert_to_corpus = FALSE){
+create_corpus <- function(file_loc, selected_comp = 'pan21',
+                          read_large = FALSE, convert_to_corpus = FALSE,
+                          x_and_y = FALSE){
 
   # Use function to get the details of files in the folder
   file_details <- get_file_details(file_loc)
@@ -69,7 +71,7 @@ create_corpus <- function(file_loc, selected_comp = NULL,
   competitions <- unique(file_details$competition)
 
   # Check to see if user has decided to filter for specific comps
-  if(length(selected_comp) > 0 & selected_comp %in% competitions){
+  if(all(selected_comp %in% competitions)){
     file_details <- file_details |>
       dplyr::filter(file_details$competition %in% selected_comp)
 
@@ -102,14 +104,22 @@ create_corpus <- function(file_loc, selected_comp = NULL,
 
     # Select and Pull were not working without this step, the named list column
     # was ruining this
-    pan21 <- pan21[,ncol(pan21)] |>
+    pan21_content <- pan21[,ncol(pan21)] |>
       dplyr::pull() |>
       unname()
 
+    # Get details of content
+    num_docs <- nrow(pan21_content[[1]])
+    comp <- rep('pan21', num_docs)
+    category <- rep(as.character(pan21[1, 4]), num_docs)
+
     # Join the truth with the text, might add other formatting to this
-    pan21 <- pan21[[1]] |>
-      dplyr::left_join(pan21[[2]],
+    pan21 <- pan21_content[[1]] |>
+      dplyr::left_join(pan21_content[[2]],
                        by = 'id')
+
+    # Add the details
+    pan21 <- cbind(pan21, 'competition' = comp, 'category' = category)
 
     results <- c(results, pan21 = list(pan21))
   }
@@ -132,16 +142,23 @@ create_corpus <- function(file_loc, selected_comp = NULL,
 
     # Select and Pull were not working without this step, the named list column
     # was ruining this
-    pan20 <- pan20[,ncol(pan20)] |>
+    pan20_content <- pan20[,ncol(pan20)] |>
       dplyr::pull() |>
       unname()
 
     # Now we need to join together - the first is if the large dataset is included
-    if(length(pan20) == 6){
+    if(length(pan20_content) == 6){
 
-      pan20_large <- pan20[[5]] |>
-        dplyr::left_join(pan20[[6]],
+      num_docs <- nrow(pan20_content[[5]])
+      comp <- rep('pan20', num_docs)
+      category <- rep(as.character(pan20[5, 4]), num_docs)
+
+      pan20_large <- pan20_content[[5]] |>
+        dplyr::left_join(pan20_content[[6]],
                          by = 'id')
+
+      # Add the details
+      pan20_large <- cbind(pan20_large, 'competition' = comp, 'category' = category)
 
       # Append the data to the list
       results <- c(results, pan20_large = list(pan20_large))
@@ -149,13 +166,27 @@ create_corpus <- function(file_loc, selected_comp = NULL,
     }
 
     # Complete the joins for the test and training data
-    pan20_test <- pan20[[1]] |>
-      dplyr::left_join(pan20[[2]],
+    pan20_test <- pan20_content[[1]] |>
+      dplyr::left_join(pan20_content[[2]],
                        by = 'id')
 
-    pan20_train <- pan20[[3]] |>
-      dplyr::left_join(pan20[[4]],
+    # Test details
+    num_docs_test <- nrow(pan20_test)
+    comp_test <- rep('pan20', num_docs_test)
+    category_test <- rep('test', num_docs_test)
+
+    pan20_train <- pan20_content[[3]] |>
+      dplyr::left_join(pan20_content[[4]],
                        by = 'id')
+
+    # Train details
+    num_docs_train <- nrow(pan20_train)
+    comp_train <- rep('pan20', num_docs_train)
+    category_train <- rep('train', num_docs_train)
+
+    # Add the details
+    pan20_test <- cbind(pan20_test, 'competition' = comp_test, 'category' = category_test)
+    pan20_train <- cbind(pan20_train, 'competition' = comp_train, 'category' = category_train)
 
     # Append these results to the list as named entities
     results <- c(results, list(pan20_test = pan20_test,
@@ -165,14 +196,39 @@ create_corpus <- function(file_loc, selected_comp = NULL,
   # Bind the results together from the list
   results <- data.table::rbindlist(results)
 
-  # Here we convert the results into a table consisting of author, fandom, and text. Returning only distinct results.
-  results <- as.data.frame(rbind(cbind(author = results$authors1, fandom = results$fandoms1, text = results$pair1),
-                                 cbind(author = results$authors2, fandom = results$fandoms2, text = results$pair2))) |>
-    dplyr::distinct()
+  if(x_and_y == FALSE){
+    # Here we convert the results into a table consisting of author, fandom, and text. Returning only distinct results.
+    results <- as.data.frame(rbind(cbind(author = results$authors1, competition = results$competition, category = results$category,
+                                         fandom = results$fandoms1, text = results$pair1),
+                                   cbind(author = results$authors2, competition = results$competition, category = results$category,
+                                         fandom = results$fandoms2, text = results$pair2))) |>
+      dplyr::distinct()
 
-  # Convert to quanteda corpus if required by the user.
-  if(convert_to_corpus == TRUE){
-    results = quanteda::corpus(results, text_field = "text")
+    results <- cbind('id' = seq(1, nrow(results)), results)
+
+    # Convert to quanteda corpus if required by the user.
+    if(convert_to_corpus == TRUE){
+      results = quanteda::corpus(results, text_field = "text")
+    }
+
+  } else if(x_and_y == TRUE){
+
+    results_x <- as.data.frame(cbind(id = results$id, author = results$authors1,
+                                     competition = results$competition, category = results$category,
+                                     fandom = results$fandoms1, text = results$pair1))
+
+    results_y <- as.data.frame(cbind(id = results$id, author = results$authors2,
+                                     competition = results$competition, category = results$category,
+                                     fandom = results$fandoms2, text = results$pair2))
+
+    # Convert to quanteda corpus if required by the user.
+    if(convert_to_corpus == TRUE){
+      results_x = quanteda::corpus(results_x, text_field = "text")
+
+      results_y = quanteda::corpus(results_y, text_field = "text")
+    }
+
+    results <- list(x = results_x, y = results_y)
   }
 
   #  Return the list

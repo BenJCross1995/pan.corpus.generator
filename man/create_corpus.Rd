@@ -6,9 +6,10 @@
 \usage{
 create_corpus(
   file_loc,
-  selected_comp = NULL,
+  selected_comp = "pan21",
   read_large = FALSE,
-  convert_to_corpus = FALSE
+  convert_to_corpus = FALSE,
+  x_and_y = FALSE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ create_corpus(
 \item{read_large}{A Binary argument TRUE/FALSE whether the large documents are read}
 
 \item{convert_to_corpus}{A Binary argument TRUE/FALSE to detemine whether to convert to Quanteda corpus object.}
+
+\item{x_and_y}{Split the corpus into x and y as opposed to a single corpus.}
 }
 \value{
 A dataframe or corpus object depending on the user's selection.
